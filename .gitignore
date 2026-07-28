@@ -1,0 +1,35 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+.venv/
+venv/
+env/
+
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+
+.vscode/
+.idea/
+*.swp
+
+.DS_Store
+Thumbs.db
+
+.env
+*.log
+
+# Saída local do pipeline (lakehouse em disco)
+data/
+spark-warehouse/
+metastore_db/
+derby.log
+
+# Os relatórios de evidencias/ são versionados; o lakehouse que os gerou, não.
+evidencias/lakehouse/
+evidencias/landing/

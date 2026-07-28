@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "novarota-lakehouse"
+version = "1.0.0"
+description = "Data product transacional em Databricks para a Cooperativa NovaRota"
+requires-python = ">=3.9"
+
+# Faixa fechada de propósito. Sem teto, o ambiente de CI instala a versão mais
+# recente e o comportamento muda: o Spark 4 liga o modo ANSI por padrão, e cast
+# malformado passa a lançar exceção em vez de devolver nulo.
+dependencies = [
+    "pyspark>=3.5,<4",
+    "delta-spark>=3.1,<4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "ruff>=0.1.6",
+]
+
+[tool.setuptools.packages.find]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+# Notebook Databricks usa dbutils, spark e display, injetados pelo runtime, e
+# tem import fora do topo por causa da divisão em células.
+exclude = ["notebooks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["E501"]
