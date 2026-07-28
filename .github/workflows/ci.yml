@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar ruff
+        run: pip install ruff
+
+      - name: Verificar lint
+        run: ruff check src tests scripts
+
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # PySpark 3.5 não roda em Java 21; o runtime suportado vai até o 17.
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -e ".[dev]"
+
+      # A suíte de unidade roda em segundos e dá o retorno rápido do PR.
+      - name: Testes de unidade
+        run: pytest tests/test_quality_rules.py tests/test_scd.py tests/test_silver.py tests/test_gold.py -v
+
+      # Submete cada consulta de sql/ ao analisador do Spark. Pega erro de
+      # sintaxe, coluna inexistente e função que o engine não tem.
+      - name: Validacao das consultas SQL
+        run: pytest tests/test_sql.py -v
+
+      # O ponta a ponta sobe o pipeline inteiro várias vezes e leva minutos, por
+      # isso fica separado: a falha aparece sem esperar por ele.
+      - name: Testes de ponta a ponta
+        run: pytest tests/test_pipeline.py -v
+        timeout-minutes: 30
